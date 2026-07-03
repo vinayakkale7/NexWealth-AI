@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-background text-text-primary overflow-x-hidden antialiased selection:bg-accent-teal/30 selection:text-white;
+  }
+}
+
+@layer utilities {
+  .glass-panel {
+    @apply bg-card backdrop-blur-3xl transition-all duration-300;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.04), 0 4px 24px -2px rgba(0, 0, 0, 0.4);
+  }
+  
+  .glass-panel:hover {
+    @apply bg-card-hover;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.08), 0 8px 32px -4px rgba(0, 0, 0, 0.5), 0 2px 8px -2px rgba(0, 0, 0, 0.3);
+  }
+  
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .mesh-gradient {
+    background-image: radial-gradient(at 40% 20%, rgba(139, 92, 246, 0.06) 0px, transparent 50%),
+                      radial-gradient(at 80% 0%, rgba(20, 184, 166, 0.06) 0px, transparent 50%),
+                      radial-gradient(at 0% 50%, rgba(59, 130, 246, 0.06) 0px, transparent 50%);
+  }
+  
+  .micro-grid {
+    background-image: linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                      linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    background-size: 16px 16px;
+  }
+}

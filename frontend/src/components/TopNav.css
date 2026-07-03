@@ -1,0 +1,84 @@
+.top-nav {
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-8);
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+
+.nav-left h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  padding: var(--space-2) var(--space-4);
+  width: 320px;
+  position: relative;
+  border-radius: var(--radius-full);
+}
+
+.search-icon {
+  color: var(--text-muted);
+  margin-right: var(--space-2);
+}
+
+.search-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-primary);
+  flex: 1;
+  font-family: inherit;
+  font-size: 0.9rem;
+}
+
+.search-input::placeholder {
+  color: var(--text-muted);
+}
+
+.search-shortcut {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--glass-border);
+}
+
+.btn-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+}
+
+.notification-dot {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  width: 8px;
+  height: 8px;
+  background: var(--status-negative);
+  border-radius: 50%;
+  box-shadow: 0 0 10px var(--status-negative);
+}
+
+.nav-ai-btn {
+  padding: var(--space-2) var(--space-4);
+  font-size: 0.9rem;
+}
