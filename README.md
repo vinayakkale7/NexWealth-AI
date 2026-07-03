@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🚀 NexWealth AI
 
 > **The AI-Powered Family Financial Operating System**
@@ -342,3 +343,7 @@ http://127.0.0.1:8000/docs
 # ⭐ If you like this project
 
 Please consider giving it a ⭐ on GitHub.
+=======
+# NexWealth-AI
+NexWealth AI is an AI-powered family financial operating system that enables couples to securely manage joint investments, analyze portfolios, receive personalized AI insights, and generate tax-ready financial summaries through an intelligent, collaborative platform.
+>>>>>>> 53ed2abd77d9c02f1f79eed15087ea755d4afc31

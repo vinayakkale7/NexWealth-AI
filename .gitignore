@@ -1,26 +1,21 @@
-# Node modules
+# ==========================
+# Frontend
+# ==========================
 node_modules/
 dist/
 dist-ssr/
 *.local
 
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-
-# Environment variables
+# ==========================
+# Environment Variables
+# ==========================
 .env
 .env.*
 !.env.example
 
-# Python/Backend (Future)
+# ==========================
+# Python / Backend
+# ==========================
 __pycache__/
 *.py[cod]
 *$py.class
@@ -28,3 +23,33 @@ __pycache__/
 venv/
 ENV/
 env/
+
+# Database
+*.db
+
+# Python cache
+.pytest_cache/
+.mypy_cache/
+
+# ==========================
+# Logs
+# ==========================
+*.log
+
+# ==========================
+# OS Files
+# ==========================
+.DS_Store
+Thumbs.db
+
+# ==========================
+# VS Code / IDE
+# ==========================
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# ==========================
+# Build / Coverage
+# ==========================
+coverage/
