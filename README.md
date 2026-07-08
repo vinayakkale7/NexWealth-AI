@@ -1,9 +1,8 @@
-<<<<<<< HEAD
 # 🚀 NexWealth AI
 
 > **The AI-Powered Family Financial Operating System**
 
-NexWealth AI is a modern full-stack fintech platform that enables families to manage their entire financial portfolio from a single intelligent workspace. The platform combines portfolio management, goal planning, AI-powered financial insights, tax preparation, and collaborative family wealth tracking into one secure application.
+NexWealth AI is a modern full-stack fintech platform that enables couples and families to securely manage joint investments, analyze their entire financial portfolio, receive personalized AI insights, and generate tax-ready financial summaries from a single intelligent, collaborative workspace.
 
 Inspired by modern SaaS products like **Ramp, Stripe, Linear, and Vercel**, NexWealth AI delivers a premium user experience with enterprise-grade architecture and AI-ready infrastructure.
 
@@ -233,38 +232,12 @@ NexWealth-AI/
 
 ---
 
-# 📸 Screenshots
-
-## Landing Page
-
-(Add Screenshot)
-
----
-
-## Dashboard
-
-(Add Screenshot)
-
----
-
-## Portfolio
-
-(Add Screenshot)
-
----
-
-## AI Advisor
-
-(Add Screenshot)
-
----
-
 # 🚀 Getting Started
 
 ## Clone Repository
 
 ```bash
-git clone https://github.com/yourusername/NexWealth-AI.git
+git clone https://github.com/vinayakkale7/NexWealth-AI.git
 ```
 
 ---
@@ -338,12 +311,3 @@ http://127.0.0.1:8000/docs
 - Retirement Calculator
 - Multi-Currency Support
 
----
-
-# ⭐ If you like this project
-
-Please consider giving it a ⭐ on GitHub.
-=======
-# NexWealth-AI
-NexWealth AI is an AI-powered family financial operating system that enables couples to securely manage joint investments, analyze portfolios, receive personalized AI insights, and generate tax-ready financial summaries through an intelligent, collaborative platform.
->>>>>>> 53ed2abd77d9c02f1f79eed15087ea755d4afc31

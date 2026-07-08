@@ -4,6 +4,7 @@
 node_modules/
 dist/
 dist-ssr/
+.vite/
 *.local
 
 # ==========================
@@ -19,22 +20,47 @@ dist-ssr/
 __pycache__/
 *.py[cod]
 *$py.class
+
 .venv/
 venv/
 ENV/
 env/
 
-# Database
-*.db
-
-# Python cache
+# Python caches
 .pytest_cache/
 .mypy_cache/
+.ruff_cache/
+.pyre/
+.hypothesis/
+
+# ==========================
+# Database
+# ==========================
+*.db
+*.sqlite
+*.sqlite3
+*.db-shm
+*.db-wal
 
 # ==========================
 # Logs
 # ==========================
 *.log
+logs/
+
+# ==========================
+# Coverage
+# ==========================
+coverage/
+htmlcov/
+.coverage
+.coverage.*
+
+# ==========================
+# Build Artifacts
+# ==========================
+build/
+dist/
 
 # ==========================
 # OS Files
@@ -43,13 +69,19 @@ env/
 Thumbs.db
 
 # ==========================
-# VS Code / IDE
+# IDE
 # ==========================
 .vscode/*
 !.vscode/extensions.json
 .idea/
 
 # ==========================
-# Build / Coverage
+# TypeScript
 # ==========================
-coverage/
+*.tsbuildinfo
+
+# ==========================
+# Misc
+# ==========================
+*.swp
+*.swo
