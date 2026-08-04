@@ -2,8 +2,19 @@ import React, { useState } from 'react';
 import Sidebar from '../components/workspace/Sidebar';
 import TopNav from '../components/workspace/TopNav';
 
-export default function WorkspaceLayout({ children, activeModule, setActiveModule }) {
+import useAppStore from '../store/useAppStore';
+import AddAssetModal from '../components/workspace/AddAssetModal';
+import ImportPortfolioModal from '../components/workspace/ImportPortfolioModal';
+
+export default function WorkspaceLayout({ children }) {
   const [isSidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const isDemoMode = useAppStore(state => state.isDemoMode);
+  const toggleDemoMode = useAppStore(state => state.toggleDemoMode);
+  
+  const isAddAssetModalOpen = useAppStore(state => state.isAddAssetModalOpen);
+  const setAddAssetModalOpen = useAppStore(state => state.setAddAssetModalOpen);
+  const isImportModalOpen = useAppStore(state => state.isImportModalOpen);
+  const setImportModalOpen = useAppStore(state => state.setImportModalOpen);
 
   return (
     <div className="flex h-screen w-full bg-background overflow-hidden selection:bg-accent-teal/30 selection:text-white">
@@ -17,18 +28,25 @@ export default function WorkspaceLayout({ children, activeModule, setActiveModul
       <Sidebar 
         isCollapsed={isSidebarCollapsed} 
         setCollapsed={setSidebarCollapsed}
-        activeModule={activeModule}
-        setActiveModule={setActiveModule}
       />
       
       <div className="flex flex-col flex-1 relative z-10 overflow-hidden">
-        <TopNav activeModule={activeModule} />
+        {isDemoMode && (
+          <div className="w-full bg-accent-teal text-background py-1.5 px-4 flex items-center justify-center gap-4 z-50 shadow-glow font-medium text-sm">
+            <span>Demo Mode Enabled. Explore simulated financial data.</span>
+            <button onClick={toggleDemoMode} className="font-bold underline hover:text-white transition-colors">Exit Demo Mode</button>
+          </div>
+        )}
+        <TopNav onToggleSidebar={() => setSidebarCollapsed(!isSidebarCollapsed)} />
         <main className="flex-1 overflow-y-auto overflow-x-hidden hide-scrollbar p-6">
           <div className="max-w-[1400px] mx-auto h-full">
             {children}
           </div>
         </main>
       </div>
+
+      <AddAssetModal isOpen={isAddAssetModalOpen} onClose={() => setAddAssetModalOpen(false)} />
+      <ImportPortfolioModal isOpen={isImportModalOpen} onClose={() => setImportModalOpen(false)} />
     </div>
   );
 }

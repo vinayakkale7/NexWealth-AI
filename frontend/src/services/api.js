@@ -17,4 +17,18 @@ api.interceptors.request.use((config) => {
   return Promise.reject(error);
 });
 
+api.interceptors.response.use((response) => {
+  return response;
+}, (error) => {
+  if (error.response && error.response.status === 401) {
+    // Centralized token invalidation
+    localStorage.removeItem('token');
+    // Only redirect if we are not already on the login or landing page
+    if (window.location.pathname !== '/login' && window.location.pathname !== '/') {
+      window.location.href = '/login';
+    }
+  }
+  return Promise.reject(error);
+});
+
 export default api;

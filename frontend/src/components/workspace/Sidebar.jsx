@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import useAppStore from '../../store/useAppStore';
 import { 
   LayoutDashboard, 
   PieChart, 
@@ -16,24 +17,35 @@ import {
 
 const MENU_ITEMS = [
   { name: 'Dashboard', icon: LayoutDashboard },
-  { name: 'Portfolio', icon: PieChart },
-  { name: 'Goals', icon: Target },
+  { name: 'Portfolio', icon: PieChart, getMeta: (state) => `${state.portfolio?.length || 0} Holdings` },
+  { name: 'Goals', icon: Target, getMeta: (state) => `${state.goals?.length || 0} Active` },
   { name: 'AI Advisor', icon: BrainCircuit },
-  { name: 'Family', icon: Users },
-  { name: 'Reports', icon: FileText },
-  { name: 'Tax Center', icon: Receipt },
-  { name: 'Settings', icon: Settings },
+  { name: 'Family', icon: Users, getMeta: (state) => `${state.family?.length || 0} Members` },
+  { name: 'Reports', icon: FileText, getMeta: (state) => `${state.reports?.length || 0} Generated` },
+  { name: 'Tax Center', icon: Receipt, getMeta: () => `1 Pending` },
+  { name: 'Settings', icon: Settings, getMeta: () => `Profile Complete` },
 ];
 
-export default function Sidebar({ isCollapsed, setCollapsed, activeModule, setActiveModule }) {
+export default function Sidebar({ isCollapsed, setCollapsed }) {
+  const storeState = useAppStore();
+  const activeModule = useAppStore(state => state.activeModule);
+  const setActiveModule = useAppStore(state => state.setActiveModule);
+  
   return (
-    <motion.aside
-      initial={{ width: 280 }}
-      animate={{ width: isCollapsed ? 80 : 280 }}
-      transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      className="relative z-20 h-screen bg-card backdrop-blur-3xl border-r border-border flex flex-col justify-between"
-    >
-      <div className="p-4 flex-1 flex flex-col gap-6">
+    <>
+      {/* Mobile Backdrop */}
+      {!isCollapsed && (
+        <div 
+          className="md:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
+          onClick={() => setCollapsed(true)}
+        />
+      )}
+      <motion.aside
+        initial={{ width: 280 }}
+        animate={{ width: isCollapsed ? 80 : 280, x: 0 }}
+        className={`absolute md:relative z-50 h-screen bg-card backdrop-blur-3xl border-r border-border flex flex-col justify-between transition-transform duration-300 md:translate-x-0 ${isCollapsed ? '-translate-x-full md:translate-x-0' : 'translate-x-0'}`}
+      >
+        <div className="p-4 flex-1 flex flex-col gap-6">
         <div className="flex items-center justify-between px-2">
           {!isCollapsed && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-2">
@@ -58,7 +70,10 @@ export default function Sidebar({ isCollapsed, setCollapsed, activeModule, setAc
             return (
               <button
                 key={item.name}
-                onClick={() => setActiveModule(item.name)}
+                onClick={() => {
+                  setActiveModule(item.name);
+                  if (window.innerWidth < 768) setCollapsed(true);
+                }}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group relative
                   ${isActive ? 'text-white bg-white/5' : 'text-text-secondary hover:text-white hover:bg-white/5'}
                 `}
@@ -73,7 +88,14 @@ export default function Sidebar({ isCollapsed, setCollapsed, activeModule, setAc
                 )}
                 <Icon size={20} className={`relative z-10 transition-colors ${isActive ? 'text-accent-teal' : 'group-hover:text-white'}`} />
                 {!isCollapsed && (
-                  <span className="relative z-10 text-sm font-medium">{item.name}</span>
+                  <div className="relative z-10 flex flex-col items-start text-left">
+                    <span className="text-sm font-medium leading-tight">{item.name}</span>
+                    {item.getMeta && (
+                      <span className={`text-[10px] tracking-wide mt-0.5 ${isActive ? 'text-white/70' : 'text-text-muted group-hover:text-text-secondary'}`}>
+                        {item.getMeta(storeState)}
+                      </span>
+                    )}
+                  </div>
                 )}
               </button>
             );
@@ -120,5 +142,6 @@ export default function Sidebar({ isCollapsed, setCollapsed, activeModule, setAc
         </div>
       </div>
     </motion.aside>
+    </>
   );
 }

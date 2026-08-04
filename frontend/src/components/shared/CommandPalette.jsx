@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, LayoutDashboard, PieChart, Target, BrainCircuit, Users, FileText, Receipt, Settings } from 'lucide-react';
 import useAppStore from '../../store/useAppStore';
@@ -15,14 +15,39 @@ const COMMANDS = [
 ];
 
 export default function CommandPalette() {
-  const isOpen = useAppStore(state => state.isCommandPaletteOpen);
-  const setOpen = useAppStore(state => state.setCommandPaletteOpen);
-  const setActiveModule = useAppStore(state => state.setActiveModule);
+  const { 
+    isCommandPaletteOpen: isOpen, 
+    setCommandPaletteOpen: setOpen, 
+    setActiveModule,
+    portfolio,
+    goals,
+    family,
+    reports
+  } = useAppStore();
   
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
 
-  const filteredCommands = COMMANDS.filter(cmd => 
+  const dynamicCommands = useMemo(() => {
+    const list = [...COMMANDS];
+    
+    portfolio.forEach(p => {
+      list.push({ id: `p-${p.id}`, name: `Holding: ${p.name}`, icon: PieChart, action: 'Portfolio' });
+    });
+    goals.forEach(g => {
+      list.push({ id: `g-${g.id}`, name: `Goal: ${g.title}`, icon: Target, action: 'Goals' });
+    });
+    family.forEach(f => {
+      list.push({ id: `f-${f.id}`, name: `Member: ${f.name}`, icon: Users, action: 'Family' });
+    });
+    reports.forEach(r => {
+      list.push({ id: `r-${r.id}`, name: `Report: ${r.title}`, icon: FileText, action: 'Reports' });
+    });
+
+    return list;
+  }, [portfolio, goals, family, reports]);
+
+  const filteredCommands = dynamicCommands.filter(cmd => 
     cmd.name.toLowerCase().includes(query.toLowerCase())
   );
 

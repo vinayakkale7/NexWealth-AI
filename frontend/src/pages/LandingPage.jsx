@@ -44,10 +44,10 @@ const Navbar = () => {
         </div>
 
         <div className="hidden lg:flex items-center gap-4">
-          <a href="#" className="text-sm font-medium text-white hover:text-accent-teal transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-teal/50 rounded-md px-2 py-1">Log in</a>
-          <button className="glass-panel px-5 py-2.5 rounded-full text-sm font-semibold text-white hover:bg-white/10 transition-all shadow-glow hover:shadow-glow-purple hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple/50">
+          <a href="/login" className="text-sm font-medium text-white hover:text-accent-teal transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-teal/50 rounded-md px-2 py-1">Log in</a>
+          <a href="/login" className="inline-block glass-panel px-5 py-2.5 rounded-full text-sm font-semibold text-white hover:bg-white/10 transition-all shadow-glow hover:shadow-glow-purple hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple/50">
             Start Free
-          </button>
+          </a>
         </div>
 
         <button className="lg:hidden text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-teal/50 rounded-md p-1" onClick={() => setMobileMenu(!mobileMenu)}>
@@ -727,9 +727,9 @@ export default function LandingPage() {
               </p>
               
               <div className="flex flex-wrap items-center gap-6">
-                <button className="bg-white text-background px-8 py-3.5 rounded-full text-sm font-bold hover:bg-gray-100 transition-all shadow-[0_0_30px_rgba(255,255,255,0.15)] hover:shadow-[0_0_40px_rgba(255,255,255,0.25)] hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50">
+                <a href="/login" className="inline-block bg-white text-background px-8 py-3.5 rounded-full text-sm font-bold hover:bg-gray-100 transition-all shadow-[0_0_30px_rgba(255,255,255,0.15)] hover:shadow-[0_0_40px_rgba(255,255,255,0.25)] hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50">
                   Start Free Trial
-                </button>
+                </a>
                 <div className="flex items-center gap-3">
                   <div className="flex -space-x-2">
                     {["from-accent-teal to-accent-emerald", "from-accent-blue to-accent-purple", "from-accent-purple to-accent-teal"].map((color, i) => (

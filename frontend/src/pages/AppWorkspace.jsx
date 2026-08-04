@@ -12,6 +12,8 @@ import { AnimatePresence, motion } from 'framer-motion';
 import useAppStore from '../store/useAppStore';
 import CommandPalette from '../components/shared/CommandPalette';
 import NotificationDrawer from '../components/shared/NotificationDrawer';
+import OnboardingModal from '../components/workspace/OnboardingModal';
+import ErrorBoundary from '../components/shared/ErrorBoundary';
 
 export default function AppWorkspace() {
   const activeModule = useAppStore(state => state.activeModule);
@@ -32,7 +34,7 @@ export default function AppWorkspace() {
   const renderModule = () => {
     switch (activeModule) {
       case 'Dashboard': return <DashboardModule />;
-      case 'Portfolio': return <PortfolioModule />;
+      case 'Portfolio': return <ErrorBoundary><PortfolioModule /></ErrorBoundary>;
       case 'Goals': return <GoalsModule />;
       case 'AI Advisor': return <AdvisorModule />;
       case 'Family': return <FamilyModule />;
@@ -61,6 +63,7 @@ export default function AppWorkspace() {
       </WorkspaceLayout>
       <CommandPalette />
       <NotificationDrawer />
+      <OnboardingModal />
     </>
   );
 }

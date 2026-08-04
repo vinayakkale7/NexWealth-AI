@@ -3,13 +3,35 @@ import * as authApi from '../services/auth';
 import * as portfolioApi from '../services/portfolio';
 import * as goalsApi from '../services/goals';
 import * as familyApi from '../services/family';
-import { mockNotifications, mockAdvisorHistory, mockReports } from '../data/mock/db';
+import { mockNotifications, mockAdvisorHistory, mockReports, DEMO_PORTFOLIO, DEMO_GOALS, DEMO_FAMILY } from '../data/mock/db';
+
+export const calculatePortfolioStats = (portfolio) => {
+  const totalNetWorth = portfolio.reduce((sum, item) => sum + (item.shares * item.ltp), 0);
+  const totalInvested = portfolio.reduce((sum, item) => sum + (item.shares * item.avgPrice), 0);
+  const todaysGain = portfolio.reduce((sum, item) => {
+    // mock daily change based on the string e.g. "+1.2%"
+    const changePct = parseFloat(item.change.replace('+', '').replace('%', '')) || 0;
+    const value = item.shares * item.ltp;
+    return sum + (value * (changePct / 100));
+  }, 0);
+  
+  const categoryAllocation = portfolio.reduce((acc, item) => {
+    const val = item.shares * item.ltp;
+    acc[item.category] = (acc[item.category] || 0) + val;
+    return acc;
+  }, {});
+
+  const totalReturn = totalInvested > 0 ? ((totalNetWorth - totalInvested) / totalInvested) * 100 : 0;
+
+  return { totalNetWorth, totalInvested, todaysGain, categoryAllocation, totalReturn };
+};
 
 const useAppStore = create((set, get) => ({
   // Auth State
   user: null,
   isAuthenticated: false,
   isLoading: false,
+  isSyncing: true,
 
   login: async (email, password) => {
     set({ isLoading: true });
@@ -55,15 +77,40 @@ const useAppStore = create((set, get) => ({
   },
 
   fetchAllData: async () => {
+    if (get().isDemoMode) return;
+    set({ isSyncing: true });
     try {
       const [portfolio, goals, family] = await Promise.all([
         portfolioApi.getPortfolio(),
         goalsApi.getGoals(),
         familyApi.getFamilyMembers()
       ]);
-      set({ portfolio, goals, family });
+      set({ portfolio, goals, family, isSyncing: false });
     } catch (err) {
       console.error("Error fetching data", err);
+      set({ isSyncing: false });
+    }
+  },
+
+  // Demo Mode
+  isDemoMode: false,
+  toggleDemoMode: () => {
+    const isDemo = !get().isDemoMode;
+    if (isDemo) {
+      // Enable Demo
+      set({
+        isDemoMode: true,
+        portfolio: DEMO_PORTFOLIO,
+        goals: DEMO_GOALS,
+        family: DEMO_FAMILY,
+        notifications: [
+          { id: 'd1', title: 'Demo Mode Activated', message: 'You are now exploring the demo portfolio.', time: 'Just now', type: 'system', isRead: false }
+        ]
+      });
+    } else {
+      // Disable Demo
+      set({ isDemoMode: false });
+      get().fetchAllData();
     }
   },
 
@@ -85,6 +132,12 @@ const useAppStore = create((set, get) => ({
   isNotificationsOpen: false,
   setNotificationsOpen: (isOpen) => set({ isNotificationsOpen: isOpen }),
 
+  isAddAssetModalOpen: false,
+  setAddAssetModalOpen: (isOpen) => set({ isAddAssetModalOpen: isOpen }),
+
+  isImportModalOpen: false,
+  setImportModalOpen: (isOpen) => set({ isImportModalOpen: isOpen }),
+
   // Portfolio
   portfolio: [],
   addInvestment: async (investment) => {
@@ -94,6 +147,12 @@ const useAppStore = create((set, get) => ({
   deleteInvestment: async (id) => {
     await portfolioApi.deleteHolding(id);
     set((state) => ({ portfolio: state.portfolio.filter(item => item.id !== id) }));
+  },
+  updateInvestment: async (id, updates) => {
+    const updated = await portfolioApi.updateHolding(id, updates);
+    set((state) => ({
+      portfolio: state.portfolio.map(item => item.id === id ? updated : item)
+    }));
   },
   
   // Goals
