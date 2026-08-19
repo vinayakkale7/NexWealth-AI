@@ -6,6 +6,7 @@ from app.models.holding import Holding
 from app.schemas.holding import HoldingCreate, HoldingResponse, HoldingUpdate
 from app.models.user import User
 from app.auth.dependencies import get_current_user
+from app.ai import cache
 
 router = APIRouter()
 
@@ -20,6 +21,7 @@ def create_holding(holding_in: HoldingCreate, db: Session = Depends(get_db), cur
     db.add(holding)
     db.commit()
     db.refresh(holding)
+    cache.bump_user_version(current_user.id)
     return holding
 
 @router.put("/{holding_id}", response_model=HoldingResponse)
@@ -33,6 +35,7 @@ def update_holding(holding_id: str, holding_in: HoldingUpdate, db: Session = Dep
     
     db.commit()
     db.refresh(holding)
+    cache.bump_user_version(current_user.id)
     return holding
 
 @router.delete("/{holding_id}")
@@ -43,4 +46,5 @@ def delete_holding(holding_id: str, db: Session = Depends(get_db), current_user:
     
     db.delete(holding)
     db.commit()
+    cache.bump_user_version(current_user.id)
     return {"status": "deleted"}

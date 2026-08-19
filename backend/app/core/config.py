@@ -14,9 +14,13 @@ class Settings(BaseSettings):
     # Using SQLite for development. In production, provide the Supabase Postgres URL via env var.
     SQLALCHEMY_DATABASE_URI: str = os.getenv("DATABASE_URL", "sqlite:///./nexwealth.db")
     
+    # AI MODEL - configurable via GEMINI_MODEL in .env
+    GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
+    
     class Config:
         case_sensitive = True
         env_file = ".env"
         extra = "ignore"
 
 settings = Settings()
+

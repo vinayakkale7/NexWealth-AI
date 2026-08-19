@@ -3,21 +3,22 @@ import * as authApi from '../services/auth';
 import * as portfolioApi from '../services/portfolio';
 import * as goalsApi from '../services/goals';
 import * as familyApi from '../services/family';
+import { aiService } from '../services/aiService';
 import { mockNotifications, mockAdvisorHistory, mockReports, DEMO_PORTFOLIO, DEMO_GOALS, DEMO_FAMILY } from '../data/mock/db';
 
 export const calculatePortfolioStats = (portfolio) => {
-  const totalNetWorth = portfolio.reduce((sum, item) => sum + (item.shares * item.ltp), 0);
-  const totalInvested = portfolio.reduce((sum, item) => sum + (item.shares * item.avgPrice), 0);
+  const totalNetWorth = portfolio.reduce((sum, item) => sum + ((item.shares || 0) * (item.ltp || 0)), 0);
+  const totalInvested = portfolio.reduce((sum, item) => sum + ((item.shares || 0) * (item.avgPrice || 0)), 0);
   const todaysGain = portfolio.reduce((sum, item) => {
-    // mock daily change based on the string e.g. "+1.2%"
-    const changePct = parseFloat(item.change.replace('+', '').replace('%', '')) || 0;
-    const value = item.shares * item.ltp;
+    const changePct = parseFloat(String(item.change || '0').replace('+', '').replace('%', '')) || 0;
+    const value = (item.shares || 0) * (item.ltp || 0);
     return sum + (value * (changePct / 100));
   }, 0);
   
   const categoryAllocation = portfolio.reduce((acc, item) => {
-    const val = item.shares * item.ltp;
-    acc[item.category] = (acc[item.category] || 0) + val;
+    const val = (item.shares || 0) * (item.ltp || 0);
+    const cat = item.category || 'Other';
+    acc[cat] = (acc[cat] || 0) + val;
     return acc;
   }, {});
 
@@ -60,7 +61,17 @@ const useAppStore = create((set, get) => ({
 
   logout: () => {
     localStorage.removeItem('token');
-    set({ user: null, isAuthenticated: false, portfolio: [], goals: [], family: [] });
+    set({
+      user: null,
+      isAuthenticated: false,
+      portfolio: [],
+      goals: [],
+      family: [],
+      aiPortfolioHealth: null,
+      aiGoalAnalysis: null,
+      aiTaxInsights: null,
+      advisorHistory: []
+    });
   },
 
   checkAuth: async () => {
@@ -86,6 +97,8 @@ const useAppStore = create((set, get) => ({
         familyApi.getFamilyMembers()
       ]);
       set({ portfolio, goals, family, isSyncing: false });
+      // Fetch cached AI health on load without auto-calling Gemini
+      get().fetchCachedAIHealth();
     } catch (err) {
       console.error("Error fetching data", err);
       set({ isSyncing: false });
@@ -97,19 +110,29 @@ const useAppStore = create((set, get) => ({
   toggleDemoMode: () => {
     const isDemo = !get().isDemoMode;
     if (isDemo) {
-      // Enable Demo
       set({
         isDemoMode: true,
         portfolio: DEMO_PORTFOLIO,
         goals: DEMO_GOALS,
         family: DEMO_FAMILY,
+        aiPortfolioHealth: {
+          health_score: 84,
+          risk_score: 45,
+          diversification_score: 80,
+          risk_level: "Moderate",
+          summary: "Demo Portfolio of 10 holdings across 6 asset classes with balanced equity and gold allocation.",
+          strengths: ["Strong exposure to Bluechip Equities & Flexi Cap Funds", "Solid 20% Gold Allocation"],
+          weaknesses: ["Tech sector weighting slightly elevated"],
+          recommendations: ["Deploy upcoming SIPs into Debt instruments to lock in yields."],
+          confidence: 94.0,
+          timestamp: "Demo Active"
+        },
         notifications: [
           { id: 'd1', title: 'Demo Mode Activated', message: 'You are now exploring the demo portfolio.', time: 'Just now', type: 'system', isRead: false }
         ]
       });
     } else {
-      // Disable Demo
-      set({ isDemoMode: false });
+      set({ isDemoMode: false, aiPortfolioHealth: null });
       get().fetchAllData();
     }
   },
@@ -170,15 +193,97 @@ const useAppStore = create((set, get) => ({
   // Family
   family: [],
 
-  // Mocks (Future Phases)
+  // ==========================================
+  // AI Financial Intelligence Engine State
+  // ==========================================
+  aiPortfolioHealth: null,
+  aiGoalAnalysis: null,
+  aiTaxInsights: null,
+  isAnalyzingAI: false,
+  advisorHistory: [],
+
+  fetchCachedAIHealth: async () => {
+    if (get().isDemoMode) return;
+    try {
+      const res = await aiService.getPortfolioHealth(false);
+      if (res && res.cached && res.data) {
+        set({ aiPortfolioHealth: res.data });
+      }
+    } catch (err) {
+      console.warn("Cached AI health check skipped:", err);
+    }
+  },
+
+  runAIAnalysis: async () => {
+    set({ isAnalyzingAI: true });
+    try {
+      const data = await aiService.analyzePortfolio();
+      set({ aiPortfolioHealth: data, isAnalyzingAI: false });
+      return data;
+    } catch (err) {
+      set({ isAnalyzingAI: false });
+      throw err;
+    }
+  },
+
+  fetchGoalAnalysis: async () => {
+    try {
+      const data = await aiService.getGoalAnalysis();
+      set({ aiGoalAnalysis: data });
+      return data;
+    } catch (err) {
+      console.error("Goal analysis error:", err);
+      throw err;
+    }
+  },
+
+  fetchTaxInsights: async () => {
+    try {
+      const data = await aiService.getTaxInsights();
+      set({ aiTaxInsights: data });
+      return data;
+    } catch (err) {
+      console.error("Tax insights error:", err);
+      throw err;
+    }
+  },
+
+  addAdvisorMessage: (message) => set((state) => ({ advisorHistory: [...state.advisorHistory, message] })),
+
+  sendAIChat: async (messageText) => {
+    const userMsg = { id: Date.now().toString(), role: 'user', content: messageText };
+    get().addAdvisorMessage(userMsg);
+
+    try {
+      const res = await aiService.chat(messageText);
+      const assistantMsg = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: res.response,
+        reasoning: res.reasoning,
+        confidence: res.confidence || 92
+      };
+      get().addAdvisorMessage(assistantMsg);
+      return assistantMsg;
+    } catch (err) {
+      const errorMsg = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: "I encountered an error connecting to the AI advisor. Please verify your connection or try again.",
+        isError: true,
+        confidence: 0
+      };
+      get().addAdvisorMessage(errorMsg);
+      throw err;
+    }
+  },
+
+  // Other Mocks & Future Phases
   notifications: mockNotifications,
   markNotificationRead: (id) => set((state) => ({
     notifications: state.notifications.map(n => n.id === id ? { ...n, isRead: true } : n)
   })),
   clearAllNotifications: () => set({ notifications: [] }),
-
-  advisorHistory: mockAdvisorHistory,
-  addAdvisorMessage: (message) => set((state) => ({ advisorHistory: [...state.advisorHistory, message] })),
 
   reports: mockReports,
 }));

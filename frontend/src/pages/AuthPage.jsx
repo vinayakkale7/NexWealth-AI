@@ -45,8 +45,8 @@ export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
   
   // Form states
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('testuser@nexwealth.com');
+  const [password, setPassword] = useState('Password123');
   const [fullName, setFullName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);

@@ -6,6 +6,7 @@ from app.models.goal import Goal
 from app.schemas.goal import GoalCreate, GoalResponse, GoalUpdate
 from app.models.user import User
 from app.auth.dependencies import get_current_user
+from app.ai import cache
 
 router = APIRouter()
 
@@ -20,6 +21,7 @@ def create_goal(goal_in: GoalCreate, db: Session = Depends(get_db), current_user
     db.add(goal)
     db.commit()
     db.refresh(goal)
+    cache.bump_user_version(current_user.id)
     return goal
 
 @router.put("/{goal_id}", response_model=GoalResponse)
@@ -33,6 +35,7 @@ def update_goal(goal_id: str, goal_in: GoalUpdate, db: Session = Depends(get_db)
     
     db.commit()
     db.refresh(goal)
+    cache.bump_user_version(current_user.id)
     return goal
 
 @router.delete("/{goal_id}")
@@ -43,4 +46,5 @@ def delete_goal(goal_id: str, db: Session = Depends(get_db), current_user: User 
     
     db.delete(goal)
     db.commit()
+    cache.bump_user_version(current_user.id)
     return {"status": "deleted"}
