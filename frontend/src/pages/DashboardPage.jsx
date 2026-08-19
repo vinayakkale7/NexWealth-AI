@@ -1,13 +1,14 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   TrendingUp, Wallet, Target, ShieldAlert, 
-  Plus, Upload, FileText, Sparkles 
+  Plus, Upload, FileText, Sparkles, RefreshCw, CheckCircle2 
 } from 'lucide-react';
 import { 
   PieChart, Pie, Cell, ResponsiveContainer, Tooltip,
   AreaChart, Area, XAxis, YAxis
 } from 'recharts';
+import { aiService } from '../services/aiService';
 import './DashboardPage.css';
 
 const donutData = [
@@ -27,6 +28,39 @@ const areaData = [
 ];
 
 export default function DashboardPage() {
+  const [aiData, setAiData] = useState(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    // Fetch cached data on mount, without triggering full analysis
+    const fetchCachedData = async () => {
+      try {
+        const response = await aiService.getPortfolioHealth();
+        if (response && response.status !== "no_cache") {
+          setAiData(response);
+        }
+      } catch (err) {
+        console.error("Failed to load cached AI data", err);
+      }
+    };
+    fetchCachedData();
+  }, []);
+
+  const handleAnalyze = async () => {
+    setIsAnalyzing(true);
+    setError(null);
+    try {
+      const response = await aiService.analyzePortfolio();
+      setAiData(response);
+    } catch (err) {
+      console.error("AI Analysis failed:", err);
+      setError("Analysis failed. Please try again later.");
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: { 
@@ -45,6 +79,17 @@ export default function DashboardPage() {
       <div className="dashboard-header mb-8">
         <h1 className="greeting">Good Morning, Vinayak</h1>
         <p className="subtitle">Here's your family's financial snapshot for today.</p>
+        <div className="mt-4 flex gap-4">
+            <button 
+                onClick={handleAnalyze} 
+                disabled={isAnalyzing}
+                className="btn btn-primary btn-sm flex items-center gap-2"
+            >
+                {isAnalyzing ? <RefreshCw size={16} className="animate-spin" /> : <Sparkles size={16} />}
+                {isAnalyzing ? 'Analyzing Portfolio...' : 'Analyze Portfolio'}
+            </button>
+            {aiData && <span className="text-sm text-success flex items-center gap-1"><CheckCircle2 size={14} /> AI Analysis Up to Date</span>}
+        </div>
       </div>
 
       <motion.div 
@@ -66,26 +111,23 @@ export default function DashboardPage() {
 
         <motion.div className="stat-card glass-panel" variants={itemVariants}>
           <div className="stat-header">
-            <span className="stat-label">Monthly Growth</span>
+            <span className="stat-label">Portfolio Health</span>
             <div className="stat-icon bg-teal"><TrendingUp size={18} /></div>
           </div>
-          <div className="stat-value">₹3,45,000</div>
-          <div className="stat-change positive">
-            <TrendingUp size={14} /> <span>+1.2% vs last month</span>
+          <div className="stat-value">{aiData ? `${aiData.portfolio_health}/100` : '--'}</div>
+          <div className="stat-change text-muted mt-2">
+            <span>Powered by Gemini</span>
           </div>
         </motion.div>
 
         <motion.div className="stat-card glass-panel" variants={itemVariants}>
           <div className="stat-header">
-            <span className="stat-label">Goal Progress</span>
+            <span className="stat-label">Diversification</span>
             <div className="stat-icon bg-emerald"><Target size={18} /></div>
           </div>
-          <div className="stat-value">68%</div>
-          <div className="stat-progress-bar">
-            <div className="progress-fill" style={{ width: '68%' }}></div>
-          </div>
-          <div className="stat-change text-muted text-sm mt-2">
-            Retirement goal on track
+          <div className="stat-value">{aiData ? `${aiData.diversification_score}/100` : '--'}</div>
+          <div className="stat-progress-bar mt-2">
+            <div className="progress-fill" style={{ width: aiData ? `${aiData.diversification_score}%` : '0%' }}></div>
           </div>
         </motion.div>
 
@@ -94,9 +136,9 @@ export default function DashboardPage() {
             <span className="stat-label">Risk Score</span>
             <div className="stat-icon bg-warning"><ShieldAlert size={18} /></div>
           </div>
-          <div className="stat-value">Moderate</div>
+          <div className="stat-value">{aiData ? aiData.risk_level : '--'}</div>
           <div className="stat-change negative mt-2">
-            <span>Action: Rebalance suggested</span>
+            <span>AI Risk Assessment</span>
           </div>
         </motion.div>
       </motion.div>
@@ -197,7 +239,18 @@ export default function DashboardPage() {
             </h3>
           </div>
           <div className="insight-content">
-            <p>Your portfolio is currently <strong>over-indexed in Large Cap IT stocks (35%)</strong>. Considering the recent market volatility, we recommend rebalancing 10% towards defensive sectors like FMCG or increasing your Gold allocation to optimize your risk-adjusted returns.</p>
+            {aiData ? (
+                <>
+                    <p>{aiData.summary}</p>
+                    <ul className="mt-4 list-disc pl-5 text-sm">
+                        {aiData.recommendations.map((rec, i) => (
+                            <li key={i} className="mb-1">{rec}</li>
+                        ))}
+                    </ul>
+                </>
+            ) : (
+                <p className="text-muted">No recent AI analysis available. Click 'Analyze Portfolio' above to generate personalized insights.</p>
+            )}
             
             <div className="insight-actions mt-4">
               <button className="btn btn-primary btn-sm">View Rebalance Plan</button>

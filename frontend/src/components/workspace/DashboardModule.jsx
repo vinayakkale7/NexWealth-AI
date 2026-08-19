@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { TrendingUp, ArrowUpRight, ArrowDownRight, Wallet, Activity, Sparkles, Target, FileText, ChevronRight, X, Shield, ShieldAlert, Zap, Plus, Download, Rocket, Loader2 } from 'lucide-react';
+import { TrendingUp, ArrowUpRight, ArrowDownRight, Wallet, Activity, Sparkles, Target, FileText, ChevronRight, X, Shield, ShieldAlert, Zap, Plus, Download, Rocket, Loader2, RefreshCw, CheckCircle2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import useAppStore, { calculatePortfolioStats } from '../../store/useAppStore';
 
@@ -58,13 +58,13 @@ const StatCard = ({ title, value, change, isPositive, icon: Icon, delay, onClick
       <div className={`flex items-center gap-1 text-sm font-medium ${isPositive ? 'text-accent-emerald' : 'text-red-400'}`}>
         {isPositive ? <ArrowUpRight size={16} /> : <ArrowDownRight size={16} />}
         <span>{change}</span>
-        <span className="text-text-muted ml-1">vs last period</span>
+        <span className="text-text-muted ml-1">vs invested</span>
       </div>
     </div>
   </motion.button>
 );
 
-const AIReportModal = ({ isOpen, onClose }) => (
+const AIReportModal = ({ isOpen, onClose, aiHealth }) => (
   <AnimatePresence>
     {isOpen && (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -73,7 +73,7 @@ const AIReportModal = ({ isOpen, onClose }) => (
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="relative w-full max-w-3xl max-h-[85vh] overflow-y-auto hide-scrollbar glass-panel rounded-3xl border border-white/10 shadow-premium bg-background/90"
+          className="relative w-full max-w-3xl max-h-[85vh] overflow-y-auto hide-scrollbar glass-panel rounded-3xl border border-white/10 shadow-premium bg-background/95"
         >
           <div className="sticky top-0 z-10 flex items-center justify-between p-6 border-b border-white/10 bg-background/95 backdrop-blur-md">
             <div className="flex items-center gap-3">
@@ -81,8 +81,8 @@ const AIReportModal = ({ isOpen, onClose }) => (
                 <Sparkles className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-white tracking-tight">AI Wealth Report</h2>
-                <p className="text-xs text-text-secondary">Generated on {new Date().toLocaleDateString()}</p>
+                <h2 className="text-xl font-bold text-white tracking-tight">AI Wealth Intelligence Report</h2>
+                <p className="text-xs text-text-secondary">Generated on {aiHealth?.timestamp || new Date().toLocaleDateString()}</p>
               </div>
             </div>
             <button onClick={onClose} className="p-2 rounded-full hover:bg-white/10 transition-colors text-text-secondary hover:text-white">
@@ -90,24 +90,72 @@ const AIReportModal = ({ isOpen, onClose }) => (
             </button>
           </div>
           
-          <div className="p-6 md:p-8 space-y-8">
-            <section>
-              <h3 className="text-sm font-bold text-accent-purple uppercase tracking-widest mb-4">Executive Summary</h3>
-              <p className="text-text-primary leading-relaxed">
-                Your portfolio is heavily weighted towards Equities (65%), which aligns with your aggressive growth profile. However, you have an opportunity to harvest ₹42,000 in short-term capital losses to optimize your upcoming tax liabilities.
+          <div className="p-6 md:p-8 space-y-6">
+            <section className="glass-panel p-6 rounded-2xl bg-white/[0.02] border border-white/5">
+              <h3 className="text-xs font-bold text-accent-purple uppercase tracking-widest mb-3 flex items-center gap-2">
+                <Sparkles size={14} /> Executive Summary
+              </h3>
+              <p className="text-text-primary leading-relaxed text-sm">
+                {aiHealth?.summary || "Your portfolio analysis is ready. Add more assets to deepen statistical accuracy."}
               </p>
             </section>
 
-            <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="glass-panel p-5 rounded-2xl bg-white/5 border border-white/5">
-                <h4 className="flex items-center gap-2 text-sm font-semibold text-white mb-2"><Shield className="w-4 h-4 text-accent-teal" /> Portfolio Analysis</h4>
-                <p className="text-sm text-text-secondary">Diversification is healthy, but consider shifting 5% from Mid-Caps to Debt instruments to lower volatility.</p>
+            <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="glass-panel p-4 rounded-xl bg-white/5 border border-white/5 flex flex-col justify-between">
+                <span className="text-xs text-text-muted font-semibold uppercase tracking-wider">Health Score</span>
+                <span className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-accent-purple to-accent-blue mt-2">
+                  {aiHealth?.health_score ?? 75}/100
+                </span>
               </div>
-              <div className="glass-panel p-5 rounded-2xl bg-white/5 border border-white/5">
-                <h4 className="flex items-center gap-2 text-sm font-semibold text-white mb-2"><Zap className="w-4 h-4 text-accent-emerald" /> Tax Suggestions</h4>
-                <p className="text-sm text-text-secondary">Offset your recent Reliance gains by selling underperforming HDFC shares before March 31st.</p>
+              <div className="glass-panel p-4 rounded-xl bg-white/5 border border-white/5 flex flex-col justify-between">
+                <span className="text-xs text-text-muted font-semibold uppercase tracking-wider">Risk Level</span>
+                <span className="text-2xl font-bold text-accent-teal mt-2">
+                  {aiHealth?.risk_level || 'Moderate'}
+                </span>
+              </div>
+              <div className="glass-panel p-4 rounded-xl bg-white/5 border border-white/5 flex flex-col justify-between">
+                <span className="text-xs text-text-muted font-semibold uppercase tracking-wider">Diversification</span>
+                <span className="text-3xl font-black text-accent-emerald mt-2">
+                  {aiHealth?.diversification_score ?? 70}%
+                </span>
               </div>
             </section>
+
+            {aiHealth?.strengths?.length > 0 && (
+              <section>
+                <h4 className="text-xs font-bold text-accent-emerald uppercase tracking-widest mb-3 flex items-center gap-2">
+                  <Shield className="w-4 h-4 text-accent-emerald" /> Portfolio Strengths
+                </h4>
+                <div className="space-y-2">
+                  {aiHealth.strengths.map((str, idx) => (
+                    <div key={idx} className="flex items-start gap-2.5 text-sm text-text-primary p-3 rounded-xl bg-accent-emerald/5 border border-accent-emerald/10">
+                      <CheckCircle2 size={16} className="text-accent-emerald shrink-0 mt-0.5" />
+                      <span>{str}</span>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {aiHealth?.recommendations?.length > 0 && (
+              <section>
+                <h4 className="text-xs font-bold text-accent-teal uppercase tracking-widest mb-3 flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-accent-teal" /> AI Optimization Recommendations
+                </h4>
+                <div className="space-y-2">
+                  {aiHealth.recommendations.map((rec, idx) => (
+                    <div key={idx} className="flex items-start gap-2.5 text-sm text-text-primary p-3 rounded-xl bg-white/5 border border-white/5">
+                      <span className="text-accent-teal font-bold shrink-0">{idx + 1}.</span>
+                      <span>{rec}</span>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            <div className="p-3 rounded-xl bg-black/40 border border-white/5 text-[11px] text-text-muted text-center">
+              *Informational engine output only. NexWealth AI does not provide registered financial, legal, or tax advice.
+            </div>
           </div>
         </motion.div>
       </div>
@@ -115,7 +163,7 @@ const AIReportModal = ({ isOpen, onClose }) => (
   </AnimatePresence>
 );
 
-const WealthScoreDrawer = ({ isOpen, onClose }) => (
+const WealthScoreDrawer = ({ isOpen, onClose, aiHealth }) => (
   <AnimatePresence>
     {isOpen && (
       <>
@@ -128,7 +176,7 @@ const WealthScoreDrawer = ({ isOpen, onClose }) => (
           className="fixed right-0 top-0 bottom-0 w-full max-w-md z-50 glass-panel border-l border-white/10 shadow-premium bg-background/95 overflow-y-auto"
         >
           <div className="p-6 border-b border-white/10 flex items-center justify-between sticky top-0 bg-background/95 backdrop-blur-md z-10">
-            <h2 className="text-lg font-bold text-white flex items-center gap-2"><Sparkles className="w-5 h-5 text-accent-purple" /> AI Wealth Score Details</h2>
+            <h2 className="text-lg font-bold text-white flex items-center gap-2"><Sparkles className="w-5 h-5 text-accent-purple" /> AI Wealth Score Breakdown</h2>
             <button onClick={onClose} className="p-2 rounded-full hover:bg-white/10 transition-colors text-text-secondary hover:text-white">
               <X size={20} />
             </button>
@@ -136,21 +184,28 @@ const WealthScoreDrawer = ({ isOpen, onClose }) => (
           
           <div className="p-6 flex flex-col gap-8">
             <div className="flex flex-col items-center justify-center p-8 glass-panel rounded-2xl bg-white/5">
-              <span className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-accent-purple to-accent-blue">84</span>
-              <span className="text-text-muted text-sm mt-2 uppercase tracking-widest font-semibold">Excellent</span>
+              <span className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-accent-purple to-accent-blue">
+                {aiHealth?.health_score ?? 75}
+              </span>
+              <span className="text-text-muted text-sm mt-2 uppercase tracking-widest font-semibold">
+                {aiHealth?.risk_level || 'Moderate'} Risk Profile
+              </span>
+              {aiHealth?.timestamp && (
+                <span className="text-[11px] text-text-muted mt-1">Analyzed: {aiHealth.timestamp}</span>
+              )}
             </div>
 
             <div className="space-y-6">
               {[
-                { label: 'Diversification Score', val: 90, color: 'bg-accent-emerald' },
-                { label: 'Risk Adjusted Return', val: 75, color: 'bg-accent-teal' },
-                { label: 'Tax Efficiency', val: 60, color: 'bg-accent-purple' },
-                { label: 'Emergency Fund', val: 100, color: 'bg-accent-blue' },
+                { label: 'Overall Portfolio Health', val: aiHealth?.health_score ?? 75, color: 'bg-accent-teal' },
+                { label: 'Diversification Score', val: aiHealth?.diversification_score ?? 70, color: 'bg-accent-emerald' },
+                { label: 'Risk Control Score', val: 100 - (aiHealth?.risk_score ?? 40), color: 'bg-accent-purple' },
+                { label: 'Engine Grounding Confidence', val: Math.round(aiHealth?.confidence ?? 92), color: 'bg-accent-blue' },
               ].map((item, i) => (
                 <div key={i}>
                   <div className="flex justify-between text-sm mb-2">
                     <span className="text-white font-medium">{item.label}</span>
-                    <span className="text-text-secondary">{item.val}/100</span>
+                    <span className="text-text-secondary font-bold">{item.val}/100</span>
                   </div>
                   <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
                     <motion.div initial={{ width: 0 }} animate={{ width: `${item.val}%` }} transition={{ duration: 1, delay: i * 0.1 }} className={`h-full ${item.color} rounded-full`} />
@@ -158,6 +213,13 @@ const WealthScoreDrawer = ({ isOpen, onClose }) => (
                 </div>
               ))}
             </div>
+
+            {aiHealth?.summary && (
+              <div className="p-4 rounded-xl bg-white/5 border border-white/5">
+                <h4 className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-2">AI Summary</h4>
+                <p className="text-xs text-text-primary leading-relaxed">{aiHealth.summary}</p>
+              </div>
+            )}
           </div>
         </motion.div>
       </>
@@ -178,15 +240,26 @@ const QuickAction = ({ icon: Icon, label, onClick, colorClass }) => (
 );
 
 export default function DashboardModule() {
-  const { portfolio, isSyncing, setActiveModule, toggleDemoMode, setAddAssetModalOpen, setImportModalOpen } = useAppStore();
+  const {
+    portfolio,
+    isSyncing,
+    setActiveModule,
+    toggleDemoMode,
+    setAddAssetModalOpen,
+    setImportModalOpen,
+    aiPortfolioHealth,
+    runAIAnalysis,
+    fetchCachedAIHealth
+  } = useAppStore();
   
   const [timeFilter, setTimeFilter] = useState('1M');
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  
-  // Report Generation State
-  const [reportState, setReportState] = useState('idle'); // idle, generating, done
-  const [reportProgress, setReportProgress] = useState(0);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+  useEffect(() => {
+    fetchCachedAIHealth();
+  }, [fetchCachedAIHealth]);
 
   const stats = useMemo(() => calculatePortfolioStats(portfolio), [portfolio]);
 
@@ -203,29 +276,22 @@ export default function DashboardModule() {
       }));
   }, [stats]);
 
-  const handleGenerateReport = () => {
-    setReportState('generating');
-    setReportProgress(0);
+  const handleGenerateReport = async () => {
+    if (isAnalyzing) return;
+    setIsAnalyzing(true);
     
-    // Simulate generation progress
-    const interval = setInterval(() => {
-      setReportProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setReportState('done');
-          toast.success('AI Report generated successfully!', {
-            style: { background: '#10B981', color: '#fff', border: '1px solid rgba(255,255,255,0.2)' },
-            icon: '✨'
-          });
-          setTimeout(() => {
-            setReportState('idle');
-            setIsReportModalOpen(true);
-          }, 500);
-          return 100;
-        }
-        return prev + 15;
+    try {
+      const result = await runAIAnalysis();
+      toast.success('AI Portfolio Health generated!', {
+        style: { background: '#10B981', color: '#fff', border: '1px solid rgba(255,255,255,0.2)' },
+        icon: '✨'
       });
-    }, 300);
+      setIsReportModalOpen(true);
+    } catch (err) {
+      toast.error('Failed to run AI analysis. Please verify your connection.');
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   if (isSyncing) {
@@ -282,27 +348,29 @@ export default function DashboardModule() {
     <div className="flex flex-col gap-6 pb-20">
       
       {/* Header */}
-      <div className="flex justify-between items-end">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
         <div>
           <h1 className="text-3xl font-bold text-white mb-1 tracking-tight">Dashboard Overview</h1>
-          <p className="text-text-secondary">AI analysis is up to date.</p>
+          <p className="text-text-secondary">
+            {aiPortfolioHealth?.timestamp ? (
+              <span className="flex items-center gap-1.5 text-accent-teal">
+                <Sparkles size={14} /> AI Analysis up to date ({aiPortfolioHealth.timestamp})
+              </span>
+            ) : (
+              "AI Ready. Click Analyze to compute verified health metrics."
+            )}
+          </p>
         </div>
         
-        <div className="relative">
+        <div className="flex items-center gap-3">
           <button 
             onClick={handleGenerateReport}
-            disabled={reportState !== 'idle'}
+            disabled={isAnalyzing}
             className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-accent-purple/20 to-accent-blue/20 border border-white/10 text-white hover:border-white/30 transition-all shadow-glow hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-accent-purple/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
           >
-            {reportState === 'idle' ? <Sparkles size={16} className="text-accent-purple" /> : <Loader2 size={16} className="text-accent-purple animate-spin" />}
-            <span className="font-medium text-sm">{reportState === 'generating' ? 'Analyzing...' : 'Generate AI Report'}</span>
+            {isAnalyzing ? <Loader2 size={16} className="text-accent-purple animate-spin" /> : <Sparkles size={16} className="text-accent-purple" />}
+            <span className="font-semibold text-sm">{isAnalyzing ? 'Analyzing Real Data...' : 'Analyze Portfolio'}</span>
           </button>
-          
-          {reportState === 'generating' && (
-            <div className="absolute -bottom-3 left-0 right-0 h-1 bg-white/10 rounded-full overflow-hidden">
-              <motion.div className="h-full bg-gradient-to-r from-accent-purple to-accent-blue" initial={{ width: 0 }} animate={{ width: `${reportProgress}%` }} />
-            </div>
-          )}
         </div>
       </div>
 
@@ -311,7 +379,7 @@ export default function DashboardModule() {
         <StatCard 
           title="Total Net Worth" 
           value={`₹${(stats.totalNetWorth || 0).toLocaleString('en-IN')}`} 
-          change={`${stats.totalReturn > 0 ? '+' : ''}${Number(stats.totalReturn ?? 0).toFixed(1)}%`} 
+          change={`${stats.totalReturn >= 0 ? '+' : ''}${Number(stats.totalReturn ?? 0).toFixed(1)}%`} 
           isPositive={stats.totalReturn >= 0} 
           icon={Wallet} 
           delay={0.1} 
@@ -327,13 +395,13 @@ export default function DashboardModule() {
           onClick={() => setActiveModule('Portfolio')} 
         />
         <StatCard 
-          title="Tax Efficiency" 
-          value="60%" 
-          change="Action req." 
-          isPositive={false} 
-          icon={ShieldAlert} 
+          title="Diversification Rating" 
+          value={`${aiPortfolioHealth?.diversification_score ?? 70}%`} 
+          change={aiPortfolioHealth?.risk_level ? `${aiPortfolioHealth.risk_level} Risk` : "Moderate Risk"} 
+          isPositive={true} 
+          icon={Shield} 
           delay={0.3} 
-          onClick={() => setActiveModule('Tax Center')} 
+          onClick={() => setIsDrawerOpen(true)} 
         />
       </div>
       
@@ -342,7 +410,7 @@ export default function DashboardModule() {
         <QuickAction icon={Target} label="Create Goal" colorClass="bg-accent-blue text-accent-blue" onClick={() => setActiveModule('Goals')} />
         <QuickAction icon={Shield} label="Invite Family" colorClass="bg-accent-emerald text-accent-emerald" onClick={() => setActiveModule('Family')} />
         <QuickAction icon={Sparkles} label="Ask AI" colorClass="bg-accent-purple text-accent-purple" onClick={() => setActiveModule('AI Advisor')} />
-        <QuickAction icon={Download} label="Generate Report" colorClass="bg-white text-white" onClick={handleGenerateReport} />
+        <QuickAction icon={Download} label="AI Report" colorClass="bg-white text-white" onClick={() => setIsReportModalOpen(true)} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -414,14 +482,21 @@ export default function DashboardModule() {
               AI Wealth Score
             </h3>
             <div className="flex items-end gap-3 mb-2">
-              <span className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-accent-purple to-accent-blue group-hover:scale-105 transition-transform origin-left">84</span>
+              <span className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-accent-purple to-accent-blue group-hover:scale-105 transition-transform origin-left">
+                {aiPortfolioHealth?.health_score ?? 75}
+              </span>
               <span className="text-text-muted text-lg mb-1 font-medium">/ 100</span>
             </div>
             <div className="w-full bg-white/5 rounded-full h-2 mb-4 overflow-hidden">
-              <motion.div initial={{ width: 0 }} animate={{ width: '84%' }} transition={{ duration: 1, delay: 0.5 }} className="bg-gradient-to-r from-accent-purple to-accent-blue h-full rounded-full" />
+              <motion.div 
+                initial={{ width: 0 }} 
+                animate={{ width: `${aiPortfolioHealth?.health_score ?? 75}%` }} 
+                transition={{ duration: 1, delay: 0.5 }} 
+                className="bg-gradient-to-r from-accent-purple to-accent-blue h-full rounded-full" 
+              />
             </div>
-            <p className="text-sm text-text-secondary leading-relaxed group-hover:text-white transition-colors">
-              Click to view detailed health breakdown and AI optimization steps.
+            <p className="text-xs text-text-secondary leading-relaxed group-hover:text-white transition-colors line-clamp-2">
+              {aiPortfolioHealth?.summary || "Click to view detailed health breakdown and AI optimization steps."}
             </p>
           </motion.button>
 
@@ -461,8 +536,8 @@ export default function DashboardModule() {
         </div>
       </div>
 
-      <WealthScoreDrawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} />
-      <AIReportModal isOpen={isReportModalOpen} onClose={() => setIsReportModalOpen(false)} />
+      <WealthScoreDrawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} aiHealth={aiPortfolioHealth} />
+      <AIReportModal isOpen={isReportModalOpen} onClose={() => setIsReportModalOpen(false)} aiHealth={aiPortfolioHealth} />
     </div>
   );
 }

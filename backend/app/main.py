@@ -18,7 +18,14 @@ app = FastAPI(
 # Set all CORS enabled origins
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000"], # React dev servers
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -29,10 +36,11 @@ def health_check():
     return {"status": "ok", "app": settings.PROJECT_NAME}
 
 # API Routers will be included here
-from app.api.endpoints import auth, dashboard, portfolio, goals, family
+from app.api.endpoints import auth, dashboard, portfolio, goals, family, ai
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["Auth"])
 app.include_router(dashboard.router, prefix="/api/v1/dashboard", tags=["Dashboard"])
 app.include_router(portfolio.router, prefix="/api/v1/portfolio", tags=["Portfolio"])
 app.include_router(goals.router, prefix="/api/v1/goals", tags=["Goals"])
 app.include_router(family.router, prefix="/api/v1/family", tags=["Family"])
+app.include_router(ai.router, prefix="/api/v1/ai", tags=["AI"])
 
